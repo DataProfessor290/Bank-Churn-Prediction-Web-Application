@@ -18,7 +18,7 @@ warnings.filterwarnings("ignore")
 # ------------------- DATA LOADING AND PREP -------------------
 @st.cache_data
 def load_data():
-    url = r"C:\Users\user\Desktop\Projects\Bank Churn\train.csv"
+    url = r"C:\Users\user\Desktop\Projects\Python Files\bank churn data.csv"
     df = pd.read_csv(url)
     df.columns = df.columns.str.lower()
     df['customerid'] = df['customerid'].astype('object')
