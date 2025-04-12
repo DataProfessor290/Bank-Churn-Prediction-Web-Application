@@ -19,7 +19,7 @@ warnings.filterwarnings("ignore")
 @st.cache_data
 def load_data():
     #url = r"C:\Users\user\Desktop\Projects\Python Files\bank churn data.csv"
-    df = pd.read_csv(bank_churn_data.csv)
+    df = pd.read_csv("bank_churn_data.csv")
     df.columns = df.columns.str.lower()
     df['customerid'] = df['customerid'].astype('object')
     df['id'] = df['id'].astype('object')
