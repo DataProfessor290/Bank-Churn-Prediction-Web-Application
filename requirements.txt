@@ -2,4 +2,4 @@ streamlit
 pandas
 scikit-learn
 xgboost
-imblearn
+imbalanced-learn
