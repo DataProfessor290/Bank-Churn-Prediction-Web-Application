@@ -13,7 +13,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from xgboost import XGBClassifier
 from imblearn.under_sampling import RandomUnderSampler
 
-# Suppress warnings to avoid clutter
+# Suppress warnings
 warnings.filterwarnings("ignore")
 
 # =============================
@@ -40,21 +40,27 @@ def prepare_data(df):
     X = df[features]
     y = df['exited']
 
-    # Resample
+    # Step 1: Temporarily encode categorical before sampling
+    X_temp = X.copy()
+    X_temp['geography'] = OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1).fit_transform(X_temp[['geography']])
+
+    # Step 2: Resample
     sampler = RandomUnderSampler()
-    X_resampled, y_resampled = sampler.fit_resample(X, y)
+    X_resampled, y_resampled = sampler.fit_resample(X_temp, y)
 
-    # Column split
-    num_cols, cat_cols = split_cols(X_resampled)
+    # Recover categorical column
+    X_resampled = pd.DataFrame(X_resampled, columns=X_temp.columns)
+    X_resampled['geography'] = X.loc[X.index[X_resampled.index], 'geography'].values
 
-    # Preprocessing pipelines
+    # Step 3: Preprocessing setup
+    num_cols, cat_cols = split_cols(X[features])
     num_pipe = Pipeline([('scaler', StandardScaler())])
     cat_pipe = Pipeline([('encoder', OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1))])
 
     processor = ColumnTransformer([
         ('num', num_pipe, num_cols),
         ('cat', cat_pipe, cat_cols)
-    ], remainder='passthrough')
+    ])
 
     x_train, x_test, y_train, y_test = train_test_split(X_resampled, y_resampled, test_size=0.3, random_state=42)
 
@@ -70,7 +76,7 @@ def get_models(processor):
         'KNN': KNeighborsClassifier(),
         'Decision Tree': DecisionTreeClassifier(),
         'Gradient Boosting': GradientBoostingClassifier(),
-        'XGBoost': XGBClassifier()
+        'XGBoost': XGBClassifier(use_label_encoder=False, eval_metric='logloss')
     }
 
     return {
@@ -81,7 +87,7 @@ def get_models(processor):
     }
 
 # =============================
-# 🧠 Train All Models (Cached)
+# 📌 Cache Trained Models
 # =============================
 @st.cache_resource
 def train_models(models, x_train, y_train):
@@ -120,7 +126,7 @@ if page == "Model Evaluation":
         if not selected_models:
             st.warning("Please select at least one model to evaluate.")
         else:
-            st.info("Training selected models and generating reports...")
+            st.info("Evaluating models...")
 
             eval_results = {}
             for name in selected_models:
