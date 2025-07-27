@@ -81,6 +81,15 @@ def get_models(processor):
     }
 
 # =============================
+# 🧠 Train All Models (Cached)
+# =============================
+@st.cache_resource
+def train_models(models, x_train, y_train):
+    for model in models.values():
+        model.fit(x_train, y_train)
+    return models
+
+# =============================
 # 🎯 Streamlit App UI
 # =============================
 st.set_page_config(page_title="Bank Churn App", layout="wide")
@@ -89,6 +98,7 @@ st.title("🏦 Bank Churn Prediction App")
 df = load_data()
 processor, x_train, x_test, y_train, y_test, features = prepare_data(df)
 models = get_models(processor)
+models = train_models(models, x_train, y_train)
 
 # =============================
 # 📍 Sidebar Navigation
@@ -115,8 +125,7 @@ if page == "Model Evaluation":
             eval_results = {}
             for name in selected_models:
                 model = models[name]
-                with st.spinner(f"Training {name}..."):
-                    model.fit(x_train, y_train)
+                with st.spinner(f"Evaluating {name}..."):
                     preds = model.predict(x_test)
 
                     f1 = f1_score(y_test, preds)
@@ -180,7 +189,6 @@ else:
         })
 
         selected_model = models[model_choice]
-        selected_model.fit(x_train, y_train)  # Fit the pipeline (including processor)
         prediction = selected_model.predict(input_data)[0]
 
         st.markdown("## 🎯 Prediction Result")
