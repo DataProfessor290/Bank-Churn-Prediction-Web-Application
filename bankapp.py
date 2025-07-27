@@ -6,8 +6,8 @@ from PIL import Image
 # ===============================
 # 🎯 Load Model and Assets
 # ===============================
-rf_model = joblib.load("Churn RF Classifier Model.pkl")
-xgb_model = joblib.load("Churn XGB Classifier Model.pkl")
+rf_model = joblib.load(r"C:\Users\Data Professor\Churn RF Classifier Model.pkl")
+xgb_model = joblib.load(r"C:\Users\Data Professor\Churn XGB Classifier Model.pkl")
 
 # ===============================
 # 🧠 Define Prediction Function
